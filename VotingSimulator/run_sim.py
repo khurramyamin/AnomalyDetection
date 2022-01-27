@@ -3,6 +3,7 @@
 
 import argparse
 import sys
+import json
 
 
 def main():
@@ -10,12 +11,13 @@ def main():
     parser.add_argument('--sim_iterations', type=int, default=1, help='number of simulations ran')
     parser.add_argument('--pop_size', type=int, default=100, help='number of agents in the population')
     parser.add_argument('--random_sampling', type=bool, default=False, help='True if random samping should be used to create the population')
-    parser.add_argument('--sample_file', nargs='?', type=argparse.FileType('r'), default=sys.stdin)
-    parser.add_argument('--outfile', nargs='?', type=argparse.FileType('w'), default=sys.stdout)
+    parser.add_argument('--sample_infile', nargs='?', type=argparse.FileType('r'), default=sys.stdin)
+    parser.add_argument('--print_outfile', nargs='?', type=argparse.FileType('w'), default=sys.stdout)
     
 
 
     args = parser.parse_args()
+    print(args)
 
 if __name__ == "__main__":
     main()
