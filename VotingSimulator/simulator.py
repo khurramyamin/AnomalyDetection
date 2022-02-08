@@ -19,12 +19,14 @@ from nn import TinyModel
 import matplotlib.pyplot as plt
 
 class simulation():
-    def __init__(self, random_sampling, pop_size, sample_infile):
+    def __init__(self, random_sampling, pop_size, sample_infile, result_randomness, result_randomness_amount):
         self.random_sampling = random_sampling # True if the agents are sampled randomly from an existing population dataset
         self.pop_size = pop_size # The number of agents in the population
         self.sample_infile = sample_infile # The file name for the input file with agent variable names and parameters
         self.agent_list = self.create_agent_list() # A list containing all the agents (agent class)
         self.precincts = self.create_precincts_list() # A list of precincts attributes and results
+        if (result_randomness):
+            self.add_result_randomness(result_randomness_amount)
 
     def read_agent_attribute(self):
         file = open(self.sample_infile)
@@ -48,7 +50,8 @@ class simulation():
         votes_values = np.empty((self.pop_size,))
         for i in range(self.pop_size):
             agent = voting_agent(data)
-            votes_values[i] = vote_prediction_model.predict(list(agent.attribute_dict.values()))
+            normalized_attr_list = self.normalize_attr(list(agent.attribute_dict.values()))
+            votes_values[i] = vote_prediction_model.predict()
             agent_list.append(agent)
         print(votes_values)
         median = np.median(votes_values)
@@ -92,17 +95,30 @@ class simulation():
         plt.show()
         return
 
+    def normalize_attr(self, list_):
+        return list_
+
+    def add_result_randomness(self, rand_amount):
+        for i in range(self.pop_size):
+            if(np.random.uniform(0,1) < rand_amount):
+                agent = self.agent_list[i]
+                agent.attribute_dict["vote"] = not agent.attribute_dict["vote"]
+                self.agent_list[i] = agent
+
+
 def main():
     parser = argparse.ArgumentParser(description='Run a simulation')
     parser.add_argument('--random_sampling', type=bool, default=False, help='True if random samping should be used to create the population')
     parser.add_argument('--pop_size', type=int, default=100, help='number of agents in the population')
     parser.add_argument('--sample_infile', type=str, default="agent_vars.json", help='json file with a list of different agent attributes')
     parser.add_argument('--visualize', type=bool, default=False, help = "whether to visualize the agent results")
+    parser.add_argument('--result_randomness', type=bool, default=False, help = "whether to add randomness to the results results")
+    parser.add_argument('--result_randomness_amount', type=float, default=0, help = "how much randomness to add to the results results. Between 0 and 1.")
     args = parser.parse_args()
     args_dict = vars(args)
 
     # Create a simulation
-    simy = simulation(args_dict["random_sampling"], args_dict["pop_size"], args_dict["sample_infile"])
+    simy = simulation(args_dict["random_sampling"], args_dict["pop_size"], args_dict["sample_infile"], args_dict["result_randomness"], args_dict["result_randomness_amount"])
     
     print(args_dict)
 
