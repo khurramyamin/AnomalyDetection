@@ -5,17 +5,21 @@ import torch
 
 class TinyModel(torch.nn.Module):
 
-    def __init__(self, input_size, output_size=1):
+    def __init__(self, input_size, output_size=1, dropout_included=False, dropout_prob=0):
         super(TinyModel, self).__init__()
 
         self.linear1 = torch.nn.Linear(input_size, input_size*2)
         self.activation = torch.nn.ReLU()
         self.linear2 = torch.nn.Linear(input_size*2, output_size)
         self.sigmoid = torch.nn.Sigmoid()
+        self.dropout = torch.nn.Dropout(p=dropout_prob)
+        self.dropout_included = dropout_included
 
     def forward(self, x):
         x = self.linear1(x)
         x = self.activation(x)
+        if (self.dropout_included):
+            x = self.dropout(x)
         x = self.linear2(x)
         x = self.sigmoid(x)
         return x

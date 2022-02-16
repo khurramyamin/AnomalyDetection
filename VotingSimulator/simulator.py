@@ -14,19 +14,27 @@ import sys
 import json
 import numpy as np
 from tokenize import String
+
+from torch import dropout
 from agent import voting_agent
 from nn import TinyModel
 import matplotlib.pyplot as plt
 
 class simulation():
-    def __init__(self, random_sampling, pop_size, sample_infile, result_randomness, result_randomness_amount):
+    def __init__(self, random_sampling, pop_size, sample_infile, randomness_vars):
         self.random_sampling = random_sampling # True if the agents are sampled randomly from an existing population dataset
         self.pop_size = pop_size # The number of agents in the population
         self.sample_infile = sample_infile # The file name for the input file with agent variable names and parameters
+        self.include_dropout = randomness_vars[4] # True if should include dropout
+        self.dropout_prob = randomness_vars[5] # prob of a dropout
         self.agent_list = self.create_agent_list() # A list containing all the agents (agent class)
-        self.precincts = self.create_precincts_list() # A list of precincts attributes and results
-        if (result_randomness):
-            self.add_result_randomness(result_randomness_amount)
+        self.trues = 0
+        
+
+        if (randomness_vars[0]):
+            self.add_result_randomness(randomness_vars[1])
+        if (randomness_vars[2]):
+            self.add_result_randomness(randomness_vars[1])
 
     def read_agent_attribute(self):
         file = open(self.sample_infile)
@@ -46,7 +54,7 @@ class simulation():
 
         # Agent VOTES on a candidate. vote is the key in attribute_dict.
         # TODO: voting mechanism. Do the vote and add some randomness at the end
-        vote_prediction_model = TinyModel(input_size=len(data), output_size=1)
+        vote_prediction_model = TinyModel(input_size=len(data), output_size=1, dropout_included=self.include_dropout, dropout_prob=self.dropout_prob)
         votes_values = np.empty((self.pop_size,))
         for i in range(self.pop_size):
             agent = voting_agent(data)
@@ -71,12 +79,10 @@ class simulation():
             else: #
                 count_false += 1 #
         print("TRUES: ", count_true) #
+        self.trues = count_true
         print("FALSES: ", count_false) #
 
         return agent_list
-
-    def create_precincts_list(self):
-        return []
 
     def visualize(self):
         x = []
@@ -104,6 +110,17 @@ class simulation():
                 agent = self.agent_list[i]
                 agent.attribute_dict["vote"] = not agent.attribute_dict["vote"]
                 self.agent_list[i] = agent
+    
+    def results(self):
+        results = []
+        keys_list = self.agent_list[0].attribute_dict.keys()
+        for i in range(len(keys_list)):
+            total = 0
+            for j in range(self.pop_size):
+                agent = self.agent_list[j]
+                total += agent.attribute_dict[keys_list[i]]
+            results.append(total/self.pop_size)
+        return results
 
 
 def main():
@@ -112,18 +129,27 @@ def main():
     parser.add_argument('--pop_size', type=int, default=100, help='number of agents in the population')
     parser.add_argument('--sample_infile', type=str, default="agent_vars.json", help='json file with a list of different agent attributes')
     parser.add_argument('--visualize', type=bool, default=False, help = "whether to visualize the agent results")
-    parser.add_argument('--result_randomness', type=bool, default=False, help = "whether to add randomness to the results results")
-    parser.add_argument('--result_randomness_amount', type=float, default=0, help = "how much randomness to add to the results results. Between 0 and 1.")
+    parser.add_argument('--result_flip_randomness', type=bool, default=False, help = "whether to add flip randomness to the results. Flips person's vote")
+    parser.add_argument('--result_flip_randomness_amount', type=float, default=0, help = "How likely flipping is, from 0 to 1.")
+    parser.add_argument('--result_threshold_randomness', type=bool, default=False, help = "whether to add threshold randomness to the results. Closer to threshold more effected by this noise")
+    parser.add_argument('--result_threshold_randomness_amount', type=float, default=0, help = "how much threshold randomness to add. Between 0 and 1.")
+    parser.add_argument('--result_dropout_randomness', type=bool, default=False, help = "whether to add dropout randomness to the results. Uses pytorch dropout functionality")
+    parser.add_argument('--result_dropout_randomness_amount', type=float, default=0, help = "how much dropout randomness to add. Between 0 and 1.")
+    parser.add_argument('--return_results_list', type=bool, default=True, help = "Whether to return a list with all the results")
     args = parser.parse_args()
     args_dict = vars(args)
 
     # Create a simulation
-    simy = simulation(args_dict["random_sampling"], args_dict["pop_size"], args_dict["sample_infile"], args_dict["result_randomness"], args_dict["result_randomness_amount"])
+    randomness_vars = [args_dict["result_randomness"], args_dict["result_dropout_randomness_amount"], args_dict["result_threshold_randomness"], args_dict["result_threshold_randomness_amount"], args_dict["result_dropout_randomness"], args_dict["result_dropout_randomness_amount"]]
+    simy = simulation(args_dict["random_sampling"], args_dict["pop_size"], args_dict["sample_infile"], randomness_vars)
     
     print(args_dict)
 
     if(args_dict["visualize"]):
         simy.visualize()
+
+    if(args_dict["return_results_list"]):
+        return simy.results()
 
 if __name__ == "__main__":
     main()
