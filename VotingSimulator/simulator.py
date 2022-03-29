@@ -59,7 +59,7 @@ class simulation():
         for i in range(self.pop_size):
             agent = voting_agent(data)
             normalized_attr_list = self.normalize_attr(list(agent.attribute_dict.values()))
-            votes_values[i] = vote_prediction_model.predict()
+            votes_values[i] = vote_prediction_model.predict(normalized_attr_list)
             agent_list.append(agent)
         print(votes_values)
         median = np.median(votes_values)
@@ -113,13 +113,14 @@ class simulation():
     
     def results(self):
         results = []
-        keys_list = self.agent_list[0].attribute_dict.keys()
-        for i in range(len(keys_list)):
+        keys_list = list(self.agent_list[0].attribute_dict.keys())
+        for i in range(len(keys_list)-1):
             total = 0
             for j in range(self.pop_size):
                 agent = self.agent_list[j]
                 total += agent.attribute_dict[keys_list[i]]
             results.append(total/self.pop_size)
+        results.append(self.trues/self.pop_size)
         return results
 
 
@@ -140,7 +141,7 @@ def main():
     args_dict = vars(args)
 
     # Create a simulation
-    randomness_vars = [args_dict["result_randomness"], args_dict["result_dropout_randomness_amount"], args_dict["result_threshold_randomness"], args_dict["result_threshold_randomness_amount"], args_dict["result_dropout_randomness"], args_dict["result_dropout_randomness_amount"]]
+    randomness_vars = [args_dict["result_flip_randomness"], args_dict["result_flip_randomness_amount"], args_dict["result_threshold_randomness"], args_dict["result_threshold_randomness_amount"], args_dict["result_dropout_randomness"], args_dict["result_dropout_randomness_amount"]]
     simy = simulation(args_dict["random_sampling"], args_dict["pop_size"], args_dict["sample_infile"], randomness_vars)
     
     print(args_dict)
@@ -149,7 +150,9 @@ def main():
         simy.visualize()
 
     if(args_dict["return_results_list"]):
-        return simy.results()
+        results = simy.results()
+        print(results)
+        return results
 
 if __name__ == "__main__":
     main()
