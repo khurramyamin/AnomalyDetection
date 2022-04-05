@@ -1,15 +1,9 @@
 [
-    ["lat", "normal_dist", 50, 16],
-    ["lon", "uniform_dist", 0, 100],
-    ["age", "uniform_int_dist", 18, 70],
-    ["income", "normal_dist", 100, 20],
-    ["black", "uniform_int_dist", 18, 70],
-    ["white", "uniform_int_dist", 1, 3],
-    ["hispanic", "uniform_int_dist", 43, 444],
-    ["American Indian or Alaska Native", "uniform_int_dist", 43, 444],
-    ["Asian", "uniform_int_dist", 43, 444],
-    ["Native Hawaiian", "uniform_int_dist", 43, 444],
-    ["Other Pacific Islander", "uniform_int_dist", 43, 444],
-    ["4", "uniform_int_dist", 0, 2],
-    ["5", "uniform_dist", 0, 5]
+    ["race", "black", 13.4, "seperate", "%"],
+    ["race", "white", 76.3, "seperate", "%"],
+    ["race", "American Indian or Alaska Native", 1.3, "seperate", "%"],
+    ["race", "Asian", 5.9, "seperate", "%"],
+    ["race", "Native Hawaiian", 0.2, "seperate", "%"],
+    ["race", "Other", 2.9, "seperate", "%"],
+    ["income", 1000, 100, "combined", "%"]
 ]

@@ -22,19 +22,19 @@ import matplotlib.pyplot as plt
 
 class simulation():
     def __init__(self, random_sampling, pop_size, sample_infile, randomness_vars):
+        self.trues = 0
         self.random_sampling = random_sampling # True if the agents are sampled randomly from an existing population dataset
         self.pop_size = pop_size # The number of agents in the population
         self.sample_infile = sample_infile # The file name for the input file with agent variable names and parameters
         self.include_dropout = randomness_vars[4] # True if should include dropout
         self.dropout_prob = randomness_vars[5] # prob of a dropout
         self.agent_list = self.create_agent_list() # A list containing all the agents (agent class)
-        self.trues = 0
         
 
         if (randomness_vars[0]):
             self.add_result_randomness(randomness_vars[1])
         if (randomness_vars[2]):
-            self.add_result_randomness(randomness_vars[1])
+            self.add_result_randomness(randomness_vars[3])
 
     def read_agent_attribute(self):
         file = open(self.sample_infile)
@@ -59,7 +59,7 @@ class simulation():
         for i in range(self.pop_size):
             agent = voting_agent(data)
             normalized_attr_list = self.normalize_attr(list(agent.attribute_dict.values()))
-            votes_values[i] = vote_prediction_model.predict(normalized_attr_list)
+            votes_values[i] = vote_prediction_model.predict(normalized_attr_list) * 100
             agent_list.append(agent)
         print(votes_values)
         median = np.median(votes_values)
