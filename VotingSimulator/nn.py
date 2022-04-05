@@ -1,4 +1,4 @@
-# Simple neural network to make predictions. Change this later on
+# Simple neural network to make predictions. Change this later on?
 
 from numpy import argmax
 import torch

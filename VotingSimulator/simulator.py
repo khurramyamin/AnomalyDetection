@@ -21,8 +21,9 @@ from nn import TinyModel
 import matplotlib.pyplot as plt
 
 class simulation():
-    def __init__(self, random_sampling, pop_size, sample_infile, randomness_vars):
+    def __init__(self, random_sampling, pop_size, sample_infile, randomness_vars, NN = None):
         self.trues = 0
+        self.NN = NN
         self.random_sampling = random_sampling # True if the agents are sampled randomly from an existing population dataset
         self.pop_size = pop_size # The number of agents in the population
         self.sample_infile = sample_infile # The file name for the input file with agent variable names and parameters
@@ -47,23 +48,26 @@ class simulation():
         agent_list = []
         file = open(self.sample_infile)
         data = json.load(file)
-        print("Agent Attributes: [name, distribution_type, mean, std] ... ")
-        for att in data:
-            #[name, distribution_type, mean/start, std/end]
-            print(att)
+        # print("Agent Attributes: [name, distribution_type, mean, std] ... ")
+        # for att in data:
+        #     #[name, distribution_type, mean/start, std/end]
+        #     print(att)
 
         # Agent VOTES on a candidate. vote is the key in attribute_dict.
         # TODO: voting mechanism. Do the vote and add some randomness at the end
-        vote_prediction_model = TinyModel(input_size=len(data), output_size=1, dropout_included=self.include_dropout, dropout_prob=self.dropout_prob)
+        if(self.NN == None):
+            vote_prediction_model = TinyModel(input_size=len(data), output_size=1, dropout_included=self.include_dropout, dropout_prob=self.dropout_prob)
+        else:
+            vote_prediction_model = self.NN
         votes_values = np.empty((self.pop_size,))
         for i in range(self.pop_size):
             agent = voting_agent(data)
             normalized_attr_list = self.normalize_attr(list(agent.attribute_dict.values()))
-            votes_values[i] = vote_prediction_model.predict(normalized_attr_list) * 100
+            votes_values[i] = vote_prediction_model.predict(normalized_attr_list)
             agent_list.append(agent)
-        print(votes_values)
+        # print(votes_values)
         median = np.median(votes_values)
-        print(median)
+        # print(median)
 
         count_true = 0 #
         count_false = 0 #
@@ -72,15 +76,15 @@ class simulation():
             agent = agent_list[i]
             agent.attribute_dict["vote"] = votes_values[i] < median
             agent_list[i] = agent
-            print(agent_list[i].attribute_dict)
+            # print(agent_list[i].attribute_dict)
 
             if (votes_values[i] < median): #
                 count_true += 1 #
             else: #
                 count_false += 1 #
-        print("TRUES: ", count_true) #
+        # print("TRUES: ", count_true) #
         self.trues = count_true
-        print("FALSES: ", count_false) #
+        # print("FALSES: ", count_false) #
 
         return agent_list
 
@@ -120,9 +124,30 @@ class simulation():
                 agent = self.agent_list[j]
                 total += agent.attribute_dict[keys_list[i]]
             results.append(total/self.pop_size)
+
         results.append(self.trues/self.pop_size)
         return results
 
+
+def run_sim(
+    NeuralNetwork, random_sampling: bool = False, pop_size: int = 100, sample_infile: str = "agent_vars.json", visualize: bool = False,
+    result_flip_randomness: bool = False, result_flip_randomness_amount: float = 0,
+    result_threshold_randomness: bool = False, result_threshold_randomness_amount: float = 0,
+    result_dropout_randomness: bool = False, result_dropout_randomness_amount: float = 0,
+    return_results_list: bool = True
+    ):
+
+    # Create a simulation
+    randomness_vars = [result_flip_randomness, result_flip_randomness_amount, result_threshold_randomness, result_threshold_randomness_amount, result_dropout_randomness, result_dropout_randomness_amount]
+    simy = simulation(random_sampling, pop_size, sample_infile, randomness_vars)
+
+    if(visualize):
+        simy.visualize()
+
+    if(return_results_list):
+        results = simy.results()
+        return results
+    return None
 
 def main():
     parser = argparse.ArgumentParser(description='Run a simulation')

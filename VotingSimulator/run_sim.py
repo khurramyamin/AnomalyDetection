@@ -4,20 +4,39 @@
 import argparse
 import sys
 import json
+import simulator
+from nn import TinyModel
 
 
 def main():
     parser = argparse.ArgumentParser(description='Run a simulation')
-    parser.add_argument('--sim_iterations', type=int, default=1, help='number of simulations ran')
-    parser.add_argument('--pop_size', type=int, default=100, help='number of agents in the population')
+    parser.add_argument('--precinct_num', type=int, default=100, help='Precincts')
     parser.add_argument('--random_sampling', type=bool, default=False, help='True if random samping should be used to create the population')
-    parser.add_argument('--sample_infile', nargs='?', type=argparse.FileType('r'), default=sys.stdin)
-    parser.add_argument('--print_outfile', nargs='?', type=argparse.FileType('w'), default=sys.stdout)
+    parser.add_argument('--pop_size', type=int, default=100, help='number of agents in the population')
+    parser.add_argument('--sample_infile', type=str, default="agent_vars.json", help='json file with a list of different agent attributes')
+    parser.add_argument('--visualize', type=bool, default=False, help = "whether to visualize the agent results")
+    parser.add_argument('--result_flip_randomness', type=bool, default=False, help = "whether to add flip randomness to the results. Flips person's vote")
+    parser.add_argument('--result_flip_randomness_amount', type=float, default=0, help = "How likely flipping is, from 0 to 1.")
+    parser.add_argument('--result_threshold_randomness', type=bool, default=False, help = "whether to add threshold randomness to the results. Closer to threshold more effected by this noise")
+    parser.add_argument('--result_threshold_randomness_amount', type=float, default=0, help = "how much threshold randomness to add. Between 0 and 1.")
+    parser.add_argument('--result_dropout_randomness', type=bool, default=False, help = "whether to add dropout randomness to the results. Uses pytorch dropout functionality")
+    parser.add_argument('--result_dropout_randomness_amount', type=float, default=0, help = "how much dropout randomness to add. Between 0 and 1.")
+    parser.add_argument('--return_results_list', type=bool, default=True, help = "Whether to return a list with all the results")
+    args_ = parser.parse_args()
+    args = vars(args_)
+
+    file = open(args["sample_infile"])
+    data = json.load(file)
+    NN = TinyModel(input_size=len(data), output_size=1, dropout_included=args["result_dropout_randomness"], dropout_prob=args["result_dropout_randomness_amount"])
+
+    total_precincts_arr = []
+    for i in range(args["precinct_num"]):
+        total_precincts_arr.append(simulator.run_sim(NN, args["random_sampling"], args["pop_size"], args["sample_infile"], args["visualize"], args["result_flip_randomness"], args["result_flip_randomness_amount"], args["result_threshold_randomness"], args["result_threshold_randomness_amount"], args["result_dropout_randomness"], args["result_dropout_randomness_amount"], args["return_results_list"]))
+    
+    # This is the array with all the precincts data. e.g., [[attrib1_avg, attrib2_avg, vote_1], [attrib1_avg, attrib2_avg, vote_2], [attrib1_avg, attrib2_avg, vote_3]]
+    print(total_precincts_arr)
     
 
-
-    args = parser.parse_args()
-    print(args)
 
 if __name__ == "__main__":
     main()
