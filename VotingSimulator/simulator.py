@@ -30,7 +30,6 @@ class simulation():
         self.include_dropout = randomness_vars[4] # True if should include dropout
         self.dropout_prob = randomness_vars[5] # prob of a dropout
         self.agent_list = self.create_agent_list() # A list containing all the agents (agent class)
-        
 
         if (randomness_vars[0]):
             self.add_result_randomness(randomness_vars[1])
@@ -116,17 +115,20 @@ class simulation():
                 self.agent_list[i] = agent
     
     def results(self):
-        results = []
+        result = []
+        all_votes = []
         keys_list = list(self.agent_list[0].attribute_dict.keys())
         for i in range(len(keys_list)-1):
             total = 0
             for j in range(self.pop_size):
                 agent = self.agent_list[j]
                 total += agent.attribute_dict[keys_list[i]]
-            results.append(total/self.pop_size)
-
-        results.append(self.trues/self.pop_size)
-        return results
+            result.append(total/self.pop_size)
+        for j in range(self.pop_size):
+            agent = self.agent_list[j]
+            all_votes.append(agent.attribute_dict["vote"])
+        result.append(self.trues/self.pop_size)
+        return result, all_votes
 
 
 def run_sim(
@@ -175,9 +177,8 @@ def main():
         simy.visualize()
 
     if(args_dict["return_results_list"]):
-        results = simy.results()
-        print(results)
-        return results
+        results, all_votes = simy.results()
+        return results, all_votes
 
 if __name__ == "__main__":
     main()

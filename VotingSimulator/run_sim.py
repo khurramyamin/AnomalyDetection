@@ -5,6 +5,7 @@ import argparse
 import sys
 import json
 import simulator
+import numpy as np
 from nn import TinyModel
 
 
@@ -30,12 +31,22 @@ def main():
     NN = TinyModel(input_size=len(data), output_size=1, dropout_included=args["result_dropout_randomness"], dropout_prob=args["result_dropout_randomness_amount"])
 
     total_precincts_arr = []
+
+    all_precinct_poll = []
     for i in range(args["precinct_num"]):
-        total_precincts_arr.append(simulator.run_sim(NN, args["random_sampling"], args["pop_size"], args["sample_infile"], args["visualize"], args["result_flip_randomness"], args["result_flip_randomness_amount"], args["result_threshold_randomness"], args["result_threshold_randomness_amount"], args["result_dropout_randomness"], args["result_dropout_randomness_amount"], args["return_results_list"]))
-    
+        precinct_arr, all_votes = simulator.run_sim(NN, args["random_sampling"], args["pop_size"], args["sample_infile"], args["visualize"], args["result_flip_randomness"], args["result_flip_randomness_amount"], args["result_threshold_randomness"], args["result_threshold_randomness_amount"], args["result_dropout_randomness"], args["result_dropout_randomness_amount"], args["return_results_list"])
+        total_precincts_arr.append(precinct_arr)
+        poll_result = poll(all_votes)
+        all_precinct_poll.append(poll_result)
+
     # This is the array with all the precincts data. e.g., [[attrib1_avg, attrib2_avg, vote_1], [attrib1_avg, attrib2_avg, vote_2], [attrib1_avg, attrib2_avg, vote_3]]
     print(total_precincts_arr)
-    
+    print(all_precinct_poll)
+
+
+def poll(all_vote : list):
+    poll_result = np.random.choice(all_vote, size = 10)
+    return poll_result
 
 
 if __name__ == "__main__":
