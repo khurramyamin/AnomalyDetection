@@ -116,7 +116,8 @@ class simulation():
     
     def results(self):
         result = []
-        all_votes = []
+        all_votes_candidates = []
+        all_votes_attributes = []
         keys_list = list(self.agent_list[0].attribute_dict.keys())
         for i in range(len(keys_list)-1):
             total = 0
@@ -126,9 +127,16 @@ class simulation():
             result.append(total/self.pop_size)
         for j in range(self.pop_size):
             agent = self.agent_list[j]
-            all_votes.append(agent.attribute_dict["vote"])
+
+            agent_attribs = []
+            for var_keys in agent.attribute_dict.keys():
+                if agent.attribute_dict[var_keys] == 1:
+                    if (var_keys != "vote"):
+                        agent_attribs.append(var_keys)
+            all_votes_candidates.append(agent.attribute_dict["vote"])
+            all_votes_attributes.append(agent_attribs)
         result.append(self.trues/self.pop_size)
-        return result, all_votes
+        return result, all_votes_candidates, all_votes_attributes
 
 
 def run_sim(

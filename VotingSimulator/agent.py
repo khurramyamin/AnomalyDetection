@@ -20,7 +20,7 @@ class voting_agent():
             else :
                 currAttribsArr.append(i)
                 if (var[4] == "%"):
-                    value = np.random.randint(low=0, high=101)
+                    value = np.random.rand()*100
                     currVal = 0
                     found = False
                     for index in currAttribsArr:

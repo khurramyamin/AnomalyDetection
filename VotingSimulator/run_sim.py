@@ -34,29 +34,50 @@ def main():
     total_precincts_arr = []
 
     all_precinct_poll = []
+    all_precinct_attribs = []
     for i in range(args["precinct_num"]):
-        precinct_arr, all_votes = simulator.run_sim(NN, args["random_sampling"], args["pop_size"], args["sample_infile"], args["visualize"], args["result_flip_randomness"], args["result_flip_randomness_amount"], args["result_threshold_randomness"], args["result_threshold_randomness_amount"], args["result_dropout_randomness"], args["result_dropout_randomness_amount"], args["return_results_list"])
+        precinct_arr, all_votes_candidates, all_votes_attribs = simulator.run_sim(NN, args["random_sampling"], args["pop_size"], args["sample_infile"], args["visualize"], args["result_flip_randomness"], args["result_flip_randomness_amount"], args["result_threshold_randomness"], args["result_threshold_randomness_amount"], args["result_dropout_randomness"], args["result_dropout_randomness_amount"], args["return_results_list"])
         total_precincts_arr.append(precinct_arr)
-        poll_result = poll(all_votes, .1)
-        all_precinct_poll.append(poll_result)
+        poll_result_candidates, poll_result_attribs = poll(all_votes_candidates, all_votes_attribs, .1)
+        all_precinct_poll.append(poll_result_candidates)
+        all_precinct_attribs.append(np.array(poll_result_attribs).flatten())
+
+    all_precinct_poll = np.array(all_precinct_poll).flatten()
+    all_precinct_attribs = np.array(all_precinct_attribs).flatten()
+    poll_result = np.count_nonzero(all_precinct_poll == True) / all_precinct_poll.shape[0]
+
+    uniques, counts = np.unique(all_precinct_attribs, return_counts=True)
+    all_percentages = dict(zip(uniques, counts * 100 / len(all_precinct_attribs)))
+
+    a_cand_index = np.where(all_precinct_poll == True)
+    b_cand_index = np.where(all_precinct_poll == False)
+
+    candidate_a_attribs = all_precinct_attribs[a_cand_index]
+    uniques, counts = np.unique(candidate_a_attribs, return_counts=True)
+    a_percentages = dict(zip(uniques, counts * 100 / len(candidate_a_attribs)))
+
+    candidate_b_attribs = all_precinct_attribs[b_cand_index]
+    uniques, counts = np.unique(candidate_b_attribs, return_counts=True)
+    b_percentages = dict(zip(uniques, counts * 100 / len(candidate_b_attribs)))
+
+    # NOTE: total_precincts_arr is the array with all the precincts data. e.g., [[attrib1_avg, attrib2_avg, vote_1], [attrib1_avg, attrib2_avg, vote_2], [attrib1_avg, attrib2_avg, vote_3]]
+    #print(total_precincts_arr)
+
+    # NOTE: poll_results is the final candidate results of the poll
+    #print(poll_result)
+
+    # NOTE: These are a dictionary with percentages of the poll
+    print(all_percentages)
+    print(a_percentages)
+    print(b_percentages)
 
 
-    all_precinct_poll = [item for sublist in all_precinct_poll for item in sublist]
-    poll_result = all_precinct_poll.count(True) / len(all_precinct_poll)
-
-    # NOTE: This is the array with all the precincts data. e.g., [[attrib1_avg, attrib2_avg, vote_1], [attrib1_avg, attrib2_avg, vote_2], [attrib1_avg, attrib2_avg, vote_3]]
-    print(total_precincts_arr)
-
-    print(poll_result)
-
-
-
-
-
-
-def poll(all_vote : list, percentage : int):
-    poll_result = np.random.choice(all_vote, size = int(len(all_vote) * percentage))
-    return poll_result
+def poll(all_votes_candidates : list, all_votes_attribs : list, percentage : int):
+    length_ = len(all_votes_candidates)
+    index_arr = np.random.randint(low = 0, high = length_, size = (int(length_ * percentage),))
+    poll_result_candidates = np.array(all_votes_candidates)[index_arr]
+    poll_result_attribs = np.array(all_votes_attribs)[index_arr]
+    return poll_result_candidates, poll_result_attribs
 
 
 if __name__ == "__main__":
