@@ -64,26 +64,34 @@ class simulation():
             normalized_attr_list = self.normalize_attr(list(agent.attribute_dict.values()))
             votes_values[i] = vote_prediction_model.predict(normalized_attr_list)
             agent_list.append(agent)
-        # print(votes_values)
-        median = np.median(votes_values)
-        # print(median)
+        #print(votes_values)
+        median = np.median(votes_values) #TODO: Figure out way to make median work better with many precincts
+        #print(median)
 
         count_true = 0 #
         count_false = 0 #
 
         for i in range(self.pop_size):
             agent = agent_list[i]
-            agent.attribute_dict["vote"] = votes_values[i] < median
+            if(votes_values[i] < median):
+                agent.attribute_dict["vote"] = True
+                count_true += 1
+            elif(votes_values[i] == median):
+                if np.random.randint(2) == 1:
+                    agent.attribute_dict["vote"] = True
+                    count_true += 1
+                else:
+                    agent.attribute_dict["vote"] = False
+                    count_false += 1
+            else:
+                agent.attribute_dict["vote"] = False
+                count_false += 1
             agent_list[i] = agent
             # print(agent_list[i].attribute_dict)
 
-            if (votes_values[i] < median): #
-                count_true += 1 #
-            else: #
-                count_false += 1 #
-        # print("TRUES: ", count_true) #
+        #print("TRUES: ", count_true) #
         self.trues = count_true
-        # print("FALSES: ", count_false) #
+        #print("FALSES: ", count_false) #
 
         return agent_list
 
@@ -149,7 +157,7 @@ def run_sim(
 
     # Create a simulation
     randomness_vars = [result_flip_randomness, result_flip_randomness_amount, result_threshold_randomness, result_threshold_randomness_amount, result_dropout_randomness, result_dropout_randomness_amount]
-    simy = simulation(random_sampling, pop_size, sample_infile, randomness_vars)
+    simy = simulation(random_sampling, pop_size, sample_infile, randomness_vars, NeuralNetwork)
 
     if(visualize):
         simy.visualize()

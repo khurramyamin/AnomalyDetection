@@ -12,9 +12,9 @@ from nn import TinyModel
 
 def main():
     parser = argparse.ArgumentParser(description='Run a simulation')
-    parser.add_argument('--precinct_num', type=int, default=100, help='Precincts')
+    parser.add_argument('--precinct_num', type=int, default=10, help='Precincts')
     parser.add_argument('--random_sampling', type=bool, default=False, help='True if random samping should be used to create the population')
-    parser.add_argument('--pop_size', type=int, default=100, help='number of agents in the population')
+    parser.add_argument('--pop_size', type=int, default=10000, help='number of agents in the population')
     parser.add_argument('--sample_infile', type=str, default="agent_vars.json", help='json file with a list of different agent attributes')
     parser.add_argument('--visualize', type=bool, default=False, help = "whether to visualize the agent results")
     parser.add_argument('--result_flip_randomness', type=bool, default=False, help = "whether to add flip randomness to the results. Flips person's vote")
@@ -54,22 +54,22 @@ def main():
 
     candidate_a_attribs = all_precinct_attribs[a_cand_index]
     uniques, counts = np.unique(candidate_a_attribs, return_counts=True)
-    a_percentages = dict(zip(uniques, counts * 100 / len(candidate_a_attribs)))
+    a_counts = dict(zip(uniques, counts)) #a_percentages = dict(zip(uniques, counts * 100 / len(candidate_a_attribs)))
 
     candidate_b_attribs = all_precinct_attribs[b_cand_index]
     uniques, counts = np.unique(candidate_b_attribs, return_counts=True)
-    b_percentages = dict(zip(uniques, counts * 100 / len(candidate_b_attribs)))
+    b_counts = dict(zip(uniques, counts)) #b_percentages = dict(zip(uniques, counts * 100 / len(candidate_b_attribs)))
 
     # NOTE: total_precincts_arr is the array with all the precincts data. e.g., [[attrib1_avg, attrib2_avg, vote_1], [attrib1_avg, attrib2_avg, vote_2], [attrib1_avg, attrib2_avg, vote_3]]
-    #print(total_precincts_arr)
+    print(total_precincts_arr)
 
     # NOTE: poll_results is the final candidate results of the poll
-    #print(poll_result)
+    print(poll_result)
 
     # NOTE: These are a dictionary with percentages of the poll
-    print(all_percentages)
-    print(a_percentages)
-    print(b_percentages)
+    #print(all_percentages)
+    #print(a_counts)
+    #print(b_counts)
 
 
 def poll(all_votes_candidates : list, all_votes_attribs : list, percentage : int):
