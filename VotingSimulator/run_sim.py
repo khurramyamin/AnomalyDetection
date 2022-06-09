@@ -35,16 +35,23 @@ def main():
 
     all_precinct_poll = []
     all_precinct_attribs = []
+    all_precincts_covar = []
     for i in range(args["precinct_num"]):
         precinct_arr, all_votes_candidates, all_votes_attribs = simulator.run_sim(NN, args["random_sampling"], args["pop_size"], args["sample_infile"], args["visualize"], args["result_flip_randomness"], args["result_flip_randomness_amount"], args["result_threshold_randomness"], args["result_threshold_randomness_amount"], args["result_dropout_randomness"], args["result_dropout_randomness_amount"], args["return_results_list"])
         total_precincts_arr.append(precinct_arr)
         poll_result_candidates, poll_result_attribs = poll(all_votes_candidates, all_votes_attribs, .1)
         all_precinct_poll.append(poll_result_candidates)
         all_precinct_attribs.append(np.array(poll_result_attribs).flatten())
-
+        all_precincts_covar.append(np.array(poll_result_attribs))
     all_precinct_poll = np.array(all_precinct_poll).flatten()
     all_precinct_attribs = np.array(all_precinct_attribs).flatten()
     poll_result = np.count_nonzero(all_precinct_poll == True) / all_precinct_poll.shape[0]
+    
+    covar_attribs = np.array(all_precincts_covar).reshape((-1,3))
+    unique_covar_attribs, covar_counts = np.unique(covar_attribs, return_counts=True, axis=0)
+    poll_covar_dicy = {}
+    for i, covar in enumerate(unique_covar_attribs):
+        poll_covar_dicy[(tuple(covar))] = covar_counts[i]
 
     uniques, counts = np.unique(all_precinct_attribs, return_counts=True)
     all_percentages = dict(zip(uniques, counts * 100 / len(all_precinct_attribs)))
@@ -71,6 +78,10 @@ def main():
     #print(a_counts)
     #print(b_counts)
 
+    # NOTE: For these the results won't have 100% of the attributes if they never appear, so just reference agent_vars instead for now
+
+    #This is poll covariance dictionary
+    print(poll_covar_dicy)
 
 def poll(all_votes_candidates : list, all_votes_attribs : list, percentage : int):
     length_ = len(all_votes_candidates)

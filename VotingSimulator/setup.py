@@ -1,1 +1,1 @@
-# Dependencies are numpy, pytorch
+# Dependencies are numpy, pytorch, matplotlib
