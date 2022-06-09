@@ -12,7 +12,7 @@ from nn import TinyModel
 
 def main():
     parser = argparse.ArgumentParser(description='Run a simulation')
-    parser.add_argument('--precinct_num', type=int, default=10, help='Precincts')
+    parser.add_argument('--precinct_num', type=int, default=1, help='Precincts')
     parser.add_argument('--random_sampling', type=bool, default=False, help='True if random samping should be used to create the population')
     parser.add_argument('--pop_size', type=int, default=10000, help='number of agents in the population')
     parser.add_argument('--sample_infile', type=str, default="agent_vars.json", help='json file with a list of different agent attributes')
