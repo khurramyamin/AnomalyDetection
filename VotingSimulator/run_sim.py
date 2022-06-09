@@ -50,8 +50,16 @@ def main():
     covar_attribs = np.array(all_precincts_covar).reshape((-1,3))
     unique_covar_attribs, covar_counts = np.unique(covar_attribs, return_counts=True, axis=0)
     poll_covar_dicy = {}
+    poll_covar_dicy_a = {}
+    poll_covar_dicy_b = {}
+
     for i, covar in enumerate(unique_covar_attribs):
         poll_covar_dicy[(tuple(covar))] = covar_counts[i]
+        if (all_precinct_poll[i]):
+            poll_covar_dicy_a[(tuple(covar))] = covar_counts[i]
+        else:
+            poll_covar_dicy_b[(tuple(covar))] = covar_counts[i]
+
 
     uniques, counts = np.unique(all_precinct_attribs, return_counts=True)
     all_percentages = dict(zip(uniques, counts * 100 / len(all_precinct_attribs)))
@@ -81,7 +89,12 @@ def main():
     # NOTE: For these the results won't have 100% of the attributes if they never appear, so just reference agent_vars instead for now
 
     #This is poll covariance dictionary
-    print(poll_covar_dicy)
+    
+    #print(poll_covar_dicy)
+
+    print(poll_covar_dicy_a)
+
+    print(poll_covar_dicy_a)
 
 def poll(all_votes_candidates : list, all_votes_attribs : list, percentage : int):
     length_ = len(all_votes_candidates)
