@@ -29,12 +29,12 @@ class simulation():
         self.sample_infile = sample_infile # The file name for the input file with agent variable names and parameters
         self.include_dropout = randomness_vars[4] # True if should include dropout
         self.dropout_prob = randomness_vars[5] # prob of a dropout
+        self.include_theshold = randomness_vars[2]
+        self.threshold_prob = randomness_vars[3]
         self.agent_list = self.create_agent_list() # A list containing all the agents (agent class)
-
         if (randomness_vars[0]):
-            self.add_result_randomness(randomness_vars[1])
-        if (randomness_vars[2]):
-            self.add_result_randomness(randomness_vars[3])
+            print("adding flip randomness")
+            self.add_result_randomness_flip(randomness_vars[1])
 
     def read_agent_attribute(self):
         file = open(self.sample_infile)
@@ -65,7 +65,11 @@ class simulation():
             votes_values[i] = vote_prediction_model.predict(normalized_attr_list)
             agent_list.append(agent)
         #print(votes_values)
-        median = np.median(votes_values) #TODO: Figure out way to make median work better with many precincts
+        zero_votes_values = votes_values - np.amin(votes_values)
+        normalized = np.array(zero_votes_values)/np.amax(zero_votes_values)
+        median = np.median(normalized) #TODO: Figure out way to make median work better with many precincts
+        print(normalized)
+        print("median: ", median)
         #print(median)
 
         count_true = 0 #
@@ -73,19 +77,24 @@ class simulation():
 
         for i in range(self.pop_size):
             agent = agent_list[i]
-            if(votes_values[i] < median):
-                agent.attribute_dict["vote"] = True
+            currVoteValue = normalized[i]
+            if(self.include_theshold):
+                currVoteValue += np.random.normal(scale = self.threshold_prob)
+            if(currVoteValue < median):
+                curr_vote = True
                 count_true += 1
-            elif(votes_values[i] == median):
+            elif(currVoteValue == median):
                 if np.random.randint(2) == 1:
-                    agent.attribute_dict["vote"] = True
+                    curr_vote = True
                     count_true += 1
                 else:
-                    agent.attribute_dict["vote"] = False
+                    curr_vote = False
                     count_false += 1
             else:
-                agent.attribute_dict["vote"] = False
+                curr_vote = False
                 count_false += 1
+
+            agent.attribute_dict["vote"] = curr_vote
             agent_list[i] = agent
             # print(agent_list[i].attribute_dict)
 
@@ -115,13 +124,18 @@ class simulation():
     def normalize_attr(self, list_):
         return list_
 
-    def add_result_randomness(self, rand_amount):
+    def add_result_randomness_flip(self, rand_amount):
         for i in range(self.pop_size):
             if(np.random.uniform(0,1) < rand_amount):
                 agent = self.agent_list[i]
-                agent.attribute_dict["vote"] = not agent.attribute_dict["vote"]
+                if agent.attribute_dict["vote"]:
+                    agent.attribute_dict["vote"] = False
+                    self.trues -= 1
+                else:
+                    agent.attribute_dict["vote"] = True
+                    self.trues += 1
                 self.agent_list[i] = agent
-    
+
     def results(self):
         result = []
         all_votes_candidates = []
@@ -135,7 +149,6 @@ class simulation():
             result.append(total/self.pop_size)
         for j in range(self.pop_size):
             agent = self.agent_list[j]
-
             agent_attribs = []
             for var_keys in agent.attribute_dict.keys():
                 if agent.attribute_dict[var_keys] == 1:
