@@ -46,7 +46,7 @@ def main():
     for i in range(args["precinct_num"]):
         precinct_arr, all_votes_candidates, all_votes_attribs = simulator.run_sim(NN, args["random_sampling"], args["pop_size"], args["sample_infile"], args["visualize"], args["result_flip_randomness"], args["result_flip_randomness_amount"], args["result_threshold_randomness"], args["result_threshold_randomness_amount"], args["result_dropout_randomness"], args["result_dropout_randomness_amount"], args["return_results_list"])
         total_precincts_arr.append(precinct_arr)
-        poll_result_candidates, poll_result_attribs = poll(all_votes_candidates, all_votes_attribs, 1)
+        poll_result_candidates, poll_result_attribs = poll(all_votes_candidates, all_votes_attribs, .1)
         all_precinct_poll.append(poll_result_candidates)
         all_precinct_attribs.append(np.array(poll_result_attribs).flatten())
         all_precincts_covar.append(np.array(poll_result_attribs))
