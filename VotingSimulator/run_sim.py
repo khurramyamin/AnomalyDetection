@@ -12,9 +12,9 @@ from nn import TinyModel
 
 def main():
     parser = argparse.ArgumentParser(description='Run a simulation')
-    parser.add_argument('--precinct_num', type=int, default=1, help='Precincts')
+    parser.add_argument('--precinct_num', type=int, default=100, help='Precincts')
     parser.add_argument('--random_sampling', type=bool, default=False, help='True if random samping should be used to create the population')
-    parser.add_argument('--pop_size', type=int, default=100000, help='number of agents in the population')
+    parser.add_argument('--pop_size', type=int, default=10000, help='number of agents in the population')
     parser.add_argument('--sample_infile', type=str, default="agent_vars.json", help='json file with a list of different agent attributes')
     parser.add_argument('--visualize', type=bool, default=False, help = "whether to visualize the agent results")
     parser.add_argument('--result_flip_randomness', type=bool, default=True, help = "whether to add flip randomness to the results. Flips person's vote")
@@ -54,18 +54,24 @@ def main():
     all_precinct_attribs = np.array(all_precinct_attribs).flatten()
     poll_result = np.count_nonzero(all_precinct_poll == True) / all_precinct_poll.shape[0]
 
-    covar_attribs = np.array(all_precincts_covar).reshape((-1,2))
+    covar_attribs = np.array(all_precincts_covar).reshape((-1,2)) # This is the number of variables #!!!!!!!!!!!!!!!!!!#
     unique_covar_attribs, covar_counts = np.unique(covar_attribs, return_counts=True, axis=0)
     poll_covar_dicy = {}
     poll_covar_dicy_a = {}
     poll_covar_dicy_b = {}
 
     for i, covar in enumerate(unique_covar_attribs):
-        poll_covar_dicy[(tuple(covar))] = covar_counts[i]
+        poll_covar_dicy[tuple(covar)] = covar_counts[i]
         a_index = np.where(all_precinct_poll == True)
-        poll_covar_dicy_a[(tuple(covar))] = np.count_nonzero(np.array(covar_attribs)[a_index] == covar)
+        attrib_1 = (np.array(covar_attribs)[a_index] == covar)[:,0]
+        attrib_2 = (np.array(covar_attribs)[a_index] == covar)[:,1]
+        combined_attribs = attrib_1[attrib_2]
+        poll_covar_dicy_a[tuple(covar)] = np.count_nonzero(combined_attribs)
         b_index = np.where(all_precinct_poll == False)
-        poll_covar_dicy_b[(tuple(covar))] = np.count_nonzero(np.array(covar_attribs)[b_index] == covar)
+        attrib_1 = (np.array(covar_attribs)[b_index] == covar)[:,0]
+        attrib_2 = (np.array(covar_attribs)[b_index] == covar)[:,1]
+        combined_attribs = attrib_1[attrib_2]
+        poll_covar_dicy_b[tuple(covar)] = np.count_nonzero(combined_attribs)
 
 
     uniques, counts = np.unique(all_precinct_attribs, return_counts=True)
@@ -73,20 +79,20 @@ def main():
 
     a_cand_index = np.where(all_precinct_poll == True)
     b_cand_index = np.where(all_precinct_poll == False)
-    print(a_cand_index)
-    print(b_cand_index)
+    # print(a_cand_index)
+    # print(b_cand_index)
 
     candidate_a_attribs = all_precinct_attribs[a_cand_index]
     uniques, counts = np.unique(candidate_a_attribs, return_counts=True)
     a_counts = dict(zip(uniques, counts)) #a_percentages = dict(zip(uniques, counts * 100 / len(candidate_a_attribs)))
 
-    print(uniques)
+    # print(uniques)
 
     candidate_b_attribs = all_precinct_attribs[b_cand_index]
     uniques, counts = np.unique(candidate_b_attribs, return_counts=True)
     b_counts = dict(zip(uniques, counts)) #b_percentages = dict(zip(uniques, counts * 100 / len(candidate_b_attribs)))
 
-    print(uniques)
+    # print(uniques)
 
     # NOTE: total_precincts_arr is the array with all the precincts data. e.g., [[attrib1_avg, attrib2_avg, vote_1], [attrib1_avg, attrib2_avg, vote_2], [attrib1_avg, attrib2_avg, vote_3]]
     #print(total_precincts_arr)
@@ -102,8 +108,7 @@ def main():
     # NOTE: For these the results won't have 100% of the attributes if they never appear, so just reference agent_vars instead for now
 
     #This is poll covariance dictionary
-    
-    #print(poll_covar_dicy)
+    print(poll_covar_dicy)
 
     print("a ", poll_covar_dicy_a)
 

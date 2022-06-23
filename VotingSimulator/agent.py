@@ -35,8 +35,6 @@ class voting_agent():
                             attribute_dict[agent_vars[index][1]] = 0
                 currAttribsArr = []
             
-
-            
             # if (var[1] == "normal_dist"):
             #     value = np.random.normal(loc=var[2], scale=var[3], size=None)
             # elif (var[1] == "uniform_dist"):

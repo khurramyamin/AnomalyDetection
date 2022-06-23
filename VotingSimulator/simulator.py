@@ -33,7 +33,7 @@ class simulation():
         self.threshold_prob = randomness_vars[3]
         self.agent_list = self.create_agent_list() # A list containing all the agents (agent class)
         if (randomness_vars[0]):
-            print("adding flip randomness")
+            # print("adding flip randomness")
             self.add_result_randomness_flip(randomness_vars[1])
 
     def read_agent_attribute(self):
@@ -68,8 +68,8 @@ class simulation():
         zero_votes_values = votes_values - np.amin(votes_values)
         normalized = np.array(zero_votes_values)/np.amax(zero_votes_values)
         median = np.median(normalized) #TODO: Figure out way to make median work better with many precincts
-        print(normalized)
-        print("median: ", median)
+        # print(normalized)
+        # print("median: ", median)
         #print(median)
 
         count_true = 0 #
@@ -200,7 +200,7 @@ def main():
     randomness_vars = [args_dict["result_flip_randomness"], args_dict["result_flip_randomness_amount"], args_dict["result_threshold_randomness"], args_dict["result_threshold_randomness_amount"], args_dict["result_dropout_randomness"], args_dict["result_dropout_randomness_amount"]]
     simy = simulation(args_dict["random_sampling"], args_dict["pop_size"], args_dict["sample_infile"], randomness_vars)
     
-    print(args_dict)
+    # print(args_dict)
 
     if(args_dict["visualize"]):
         simy.visualize()
